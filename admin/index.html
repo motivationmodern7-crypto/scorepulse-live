@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScorePulse Admin - API & Match Control</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #f1f5f9; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Login Overlay -->
+  <div id="loginBox" class="fixed inset-0 bg-[#0b0f19] z-50 flex items-center justify-center p-4">
+    <div class="bg-[#131a2a] border border-slate-800 rounded-xl p-6 w-full max-w-sm shadow-2xl">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+        <h2 class="text-lg font-bold">ScorePulse Admin Login</h2>
+      </div>
+      <p class="text-xs text-slate-400 mb-4">API keys aur live settings manage karne ke liye password daalein (Default: <code class="text-emerald-400">admin123</code>)</p>
+      <input type="password" id="adminPass" placeholder="Enter Admin Password" class="w-full bg-[#0b0f19] border border-slate-700 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:border-emerald-500">
+      <button onclick="checkLogin()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 rounded-lg text-sm transition">Unlock Admin Panel</button>
+      <p id="loginErr" class="text-red-400 text-xs mt-2 hidden">Galat password! Dobara try karein.</p>
+    </div>
+  </div>
+
+  <!-- Admin Header -->
+  <header class="bg-[#131a2a] border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded text-xs font-bold">ADMIN</span>
+      <h1 class="font-bold text-lg">ScorePulse Control Center</h1>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/" target="_blank" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg border border-slate-700">Open Client Site ↗</a>
+      <button onclick="logoutAdmin()" class="text-xs text-red-400 hover:underline">Logout</button>
+    </div>
+  </header>
+
+  <!-- Main Admin Content -->
+  <main class="max-w-3xl w-full mx-auto p-6 space-y-6">
+    
+    <!-- API Configuration Card -->
+    <div class="bg-[#131a2a] border border-slate-800 rounded-xl p-6">
+      <h2 class="text-base font-bold mb-1">Live Sports API Configuration</h2>
+      <p class="text-xs text-slate-400 mb-5">Yahan se aap CricketData.org ya RapidAPI ki key connect kar sakte hain.</p>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Data Mode</label>
+          <select id="dataMode" class="w-full bg-[#0b0f19] border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            <option value="demo">Vercel Demo Mode (Simulated Live Scores)</option>
+            <option value="live">Real API Mode (Live Match Data)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">API Provider</label>
+          <select id="apiProvider" class="w-full bg-[#0b0f19] border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            <option value="cricapi">CricketData.org (CricAPI)</option>
+            <option value="rapidapi">RapidAPI (Cricbuzz / AllSports)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">API Key</label>
+          <input type="text" id="apiKeyInput" placeholder="Apni API key yahan paste karein..." class="w-full bg-[#0b0f19] border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Auto-Refresh Interval (Seconds)</label>
+          <input type="number" id="refreshInterval" value="15" min="5" max="120" class="w-full bg-[#0b0f19] border border-slate-700 rounded-lg px-3 py-2 text-sm">
+        </div>
+
+        <div class="pt-2 flex items-center gap-3">
+          <button onclick="saveConfig()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-5 py-2 rounded-lg text-sm transition">Save Settings</button>
+          <span id="saveMsg" class="text-xs text-emerald-400 hidden">✓ Settings saved successfully!</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const ADMIN_PASS = "admin123"; // Ise aap apne hisab se badal sakte hain
+
+    function checkLogin() {
+      const val = document.getElementById('adminPass').value;
+      if (val === ADMIN_PASS) {
+        sessionStorage.setItem('sp_admin_auth', 'true');
+        document.getElementById('loginBox').classList.add('hidden');
+        loadConfig();
+      } else {
+        document.getElementById('loginErr').classList.remove('hidden');
+      }
+    }
+
+    function logoutAdmin() {
+      sessionStorage.removeItem('sp_admin_auth');
+      location.reload();
+    }
+
+    if (sessionStorage.getItem('sp_admin_auth') === 'true') {
+      document.getElementById('loginBox').classList.add('hidden');
+    }
+
+    function loadConfig() {
+      const saved = JSON.parse(localStorage.getItem('scorepulse_api_config') || '{}');
+      if (saved.mode) document.getElementById('dataMode').value = saved.mode;
+      if (saved.provider) document.getElementById('apiProvider').value = saved.provider;
+      if (saved.apiKey) document.getElementById('apiKeyInput').value = saved.apiKey;
+      if (saved.interval) document.getElementById('refreshInterval').value = saved.interval;
+    }
+
+    function saveConfig() {
+      const config = {
+        mode: document.getElementById('dataMode').value,
+        provider: document.getElementById('apiProvider').value,
+        apiKey: document.getElementById('apiKeyInput').value.trim(),
+        interval: parseInt(document.getElementById('refreshInterval').value) || 15
+      };
+      localStorage.setItem('scorepulse_api_config', JSON.stringify(config));
+      const msg = document.getElementById('saveMsg');
+      msg.classList.remove('hidden');
+      setTimeout(() => msg.classList.add('hidden'), 3000);
+    }
+
+    loadConfig();
+  </script>
+</body>
+</html>
