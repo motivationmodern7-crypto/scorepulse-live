@@ -25,11 +25,11 @@
       </div>
       <div class="hidden md:flex items-center bg-[#0b0f19] border border-slate-800 rounded-lg px-3 py-1.5 w-72">
         <i class="fa-solid fa-magnifying-glass text-slate-500 text-xs mr-2"></i>
-        <input type="text" placeholder="Search teams, tournaments..." class="bg-transparent text-xs text-slate-200 focus:outline-none w-full">
+        <input type="text" id="searchInput" oninput="searchMatches()" placeholder="Search teams, tournaments..." class="bg-transparent text-xs text-slate-200 focus:outline-none w-full">
       </div>
     </div>
     <div class="flex items-center gap-4 text-xs font-medium">
-      <span class="text-slate-400 hidden sm:inline"><i class="fa-regular fa-clock mr-1 text-emerald-400"></i> IST 10:47 PM</span>
+      <span class="text-slate-400 hidden sm:inline"><i class="fa-regular fa-clock mr-1 text-emerald-400"></i> <span id="liveClock">IST 10:51 PM</span></span>
       <a href="/admin" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
         <i class="fa-solid fa-gear text-emerald-400"></i> Admin Panel
       </a>
@@ -38,18 +38,18 @@
 
   <!-- Sports Nav -->
   <nav class="bg-[#131a2a]/60 border-b border-slate-800/60 px-4 lg:px-8 py-2.5 flex items-center gap-2 overflow-x-auto custom-scrollbar">
-    <button class="bg-emerald-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shadow-sm">All Live Sports</button>
-    <button class="bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition">🏏 Cricket</button>
-    <button class="bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition">⚽ Football</button>
-    <button class="bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition">kabaddi Pro Kabaddi</button>
-    <button class="bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition">🎾 Tennis</button>
+    <button onclick="filterSport('all', this)" class="sport-btn bg-emerald-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shadow-sm transition">All Live Sports</button>
+    <button onclick="filterSport('cricket', this)" class="sport-btn bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition">🏏 Cricket</button>
+    <button onclick="filterSport('football', this)" class="sport-btn bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition">⚽ Football</button>
+    <button onclick="filterSport('kabaddi', this)" class="sport-btn bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition">kabaddi Pro Kabaddi</button>
+    <button onclick="filterSport('tennis', this)" class="sport-btn bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition">🎾 Tennis</button>
   </nav>
 
   <!-- Main Content -->
   <main class="max-w-7xl w-full mx-auto p-4 lg:p-6 space-y-6 flex-grow">
     
     <!-- Featured Live Match -->
-    <section class="bg-gradient-to-r from-[#131a2a] to-[#1a233a] border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+    <section id="featuredMatchSection" class="bg-gradient-to-r from-[#131a2a] to-[#1a233a] border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden" data-sport="cricket" data-teams="india australia t20i">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800/80">
         <div class="flex items-center gap-3">
           <span class="bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
@@ -80,12 +80,12 @@
               <div class="w-9 h-9 rounded-lg bg-emerald-600/20 text-emerald-400 font-bold flex items-center justify-center text-xs">IN</div>
               <div>
                 <h4 class="font-bold text-sm flex items-center gap-2">India <span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded font-bold">BATTING</span></h4>
-                <p class="text-[11px] text-emerald-400 font-medium mt-0.5">IND need 13 runs in 3 balls</p>
+                <p id="matchStatusText" class="text-[11px] text-emerald-400 font-medium mt-0.5">IND need 13 runs in 3 balls</p>
               </div>
             </div>
             <div class="text-right">
-              <div class="text-base font-bold">186/5 <span class="text-xs text-slate-400 font-normal">(19.3 ov)</span></div>
-              <div class="text-[11px] text-slate-400">CRR: 9.54 • RRR: 26.00</div>
+              <div class="text-base font-bold"><span id="indRuns">186</span>/<span id="indWickets">5</span> <span class="text-xs text-slate-400 font-normal">(<span id="indOvers">19.3</span> ov)</span></div>
+              <div class="text-[11px] text-slate-400">CRR: <span id="crrVal">9.54</span> • RRR: 26.00</div>
             </div>
           </div>
         </div>
@@ -98,7 +98,7 @@
           </div>
           <div class="flex items-center justify-between text-xs">
             <span class="font-medium text-white flex items-center gap-1.5">Suryakumar Yadav (c)* <span class="text-emerald-400">⚡</span></span>
-            <span class="font-bold">151 (80)</span>
+            <span id="skyScore" class="font-bold">151 (80)</span>
           </div>
           <div class="flex items-center justify-between text-xs">
             <span class="text-slate-300">Hardik Pandya</span>
@@ -115,19 +115,20 @@
       <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between flex-wrap gap-3">
         <div class="flex items-center gap-2 text-xs">
           <span class="text-slate-400 font-medium">Recent Deliveries:</span>
-          <div class="flex items-center gap-1.5 font-bold">
+          <div class="flex items-center gap-1.5 font-bold" id="recentBalls">
             <span class="w-6 h-6 rounded-full bg-red-500/20 text-red-400 border border-red-500/40 flex items-center justify-center text-[10px]">W</span>
             <span class="w-6 h-6 rounded-full bg-slate-800 text-slate-200 flex items-center justify-center text-[10px]">2</span>
             <span class="w-6 h-6 rounded-full bg-slate-800 text-slate-200 flex items-center justify-center text-[10px]">2</span>
             <span class="w-6 h-6 rounded-full bg-slate-800 text-slate-200 flex items-center justify-center text-[10px]">2</span>
             <span class="w-6 h-6 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-[10px]">0</span>
             <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center text-[10px]">1</span>
-            <span class="w-6 h-6 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-[10px]">0</span>
+            <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center text-[10px]">4</span>
           </div>
         </div>
         <div class="flex items-center gap-4 text-xs">
-          <span class="text-slate-400">IND Win Prob: <strong class="text-emerald-400">48%</strong></span>
-          <span class="text-slate-400">AUS Win Prob: <strong class="text-blue-400">52%</strong></span>
+          <button onclick="openScorecard()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-3 py-1.5 rounded-lg transition shadow-sm">
+            <i class="fa-solid fa-chart-column mr-1"></i> Full Scorecard
+          </button>
         </div>
       </div>
     </section>
@@ -135,10 +136,10 @@
     <!-- Other Live & Recent Matches Grid -->
     <section>
       <h3 class="text-sm font-bold tracking-wide uppercase text-slate-400 mb-3">Other Live & Recent Matches</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="matchesGrid">
         
         <!-- Match 1 -->
-        <div class="bg-[#131a2a] border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition">
+        <div class="match-card bg-[#131a2a] border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition" data-sport="football" data-teams="arsenal liverpool premier league">
           <div class="flex items-center justify-between text-xs text-slate-400 mb-3">
             <span>Premier League • Matchweek 12</span>
             <span class="bg-red-500/20 text-red-400 px-2 py-0.5 rounded text-[10px] font-bold">LIVE 75'</span>
@@ -155,12 +156,12 @@
           </div>
           <div class="pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex justify-between">
             <span>2nd Half • Live Action</span>
-            <span class="text-emerald-400 font-medium cursor-pointer">Scorecard ›</span>
+            <button onclick="openGenericModal('Arsenal vs Liverpool Scorecard', 'Arsenal 2 - 2 Liverpool (75 mins played). Intense second-half action at Emirates Stadium.')" class="text-emerald-400 font-medium hover:underline">Scorecard ›</button>
           </div>
         </div>
 
         <!-- Match 2 -->
-        <div class="bg-[#131a2a] border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition">
+        <div class="match-card bg-[#131a2a] border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition" data-sport="cricket" data-teams="south africa england odi">
           <div class="flex items-center justify-between text-xs text-slate-400 mb-3">
             <span>South Africa vs England • 2nd ODI</span>
             <span class="bg-red-500/20 text-red-400 px-2 py-0.5 rounded text-[10px] font-bold">LIVE</span>
@@ -177,12 +178,12 @@
           </div>
           <div class="pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex justify-between">
             <span>ENG trail by 42 runs</span>
-            <span class="text-emerald-400 font-medium cursor-pointer">Scorecard ›</span>
+            <button onclick="openGenericModal('SA vs ENG 2nd ODI Scorecard', 'South Africa: 289/8 (50 ov). England: 248/3 (42.2 ov). ENG need 42 runs in 46 balls.')" class="text-emerald-400 font-medium hover:underline">Scorecard ›</button>
           </div>
         </div>
 
         <!-- Match 3 -->
-        <div class="bg-[#131a2a] border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition">
+        <div class="match-card bg-[#131a2a] border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition" data-sport="kabaddi" data-teams="patna pirates jaipur pink panthers pro kabaddi">
           <div class="flex items-center justify-between text-xs text-slate-400 mb-3">
             <span>Pro Kabaddi League • Season 11</span>
             <span class="bg-red-500/20 text-red-400 px-2 py-0.5 rounded text-[10px] font-bold">LIVE</span>
@@ -199,7 +200,7 @@
           </div>
           <div class="pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex justify-between">
             <span>2nd Half • 04:15 Remaining</span>
-            <span class="text-emerald-400 font-medium cursor-pointer">Details ›</span>
+            <button onclick="openGenericModal('Pro Kabaddi Match Details', 'Patna Pirates 34 - 31 Jaipur Pink Panthers. Raid points: Patna 18, Jaipur 16.')" class="text-emerald-400 font-medium hover:underline">Details ›</button>
           </div>
         </div>
 
@@ -208,10 +209,123 @@
 
   </main>
 
+  <!-- Modal Popup for Scorecards -->
+  <div id="scorecardModal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#131a2a] border border-slate-800 rounded-xl max-w-lg w-full p-6 shadow-2xl relative">
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-sm"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <h3 id="modalTitle" class="text-base font-bold text-white mb-3">Full Scorecard</h3>
+      <div id="modalBody" class="space-y-3 text-xs text-slate-300 max-h-96 overflow-y-auto custom-scrollbar">
+        <!-- Dynamic content -->
+      </div>
+      <div class="mt-5 pt-3 border-t border-slate-800 text-right">
+        <button onclick="closeModal()" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-semibold">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="bg-[#131a2a] border-t border-slate-800 py-4 px-6 text-center text-xs text-slate-500">
     ScorePulse Live &copy; 2026 • Real-Time Sports Score Hub
   </footer>
 
+  <!-- JavaScript functionality -->
+  <script>
+    // Live Auto-Update Simulation for Featured Match
+    let runs = 186;
+    let balls = 3; // 19.3 overs
+    setInterval(() => {
+      if (Math.random() > 0.5) {
+        runs += Math.floor(Math.random() * 3); // add 0, 1, or 2 runs
+        balls++;
+        if (balls >= 6) {
+          balls = 0;
+          let ov = parseFloat(document.getElementById('indOvers').innerText);
+          document.getElementById('indOvers').innerText = (Math.floor(ov) + 1).toFixed(1);
+        } else {
+          document.getElementById('indOvers').innerText = `19.${balls}`;
+        }
+        document.getElementById('indRuns').innerText = runs;
+        let needed = 198 - runs + 1;
+        document.getElementById('matchStatusText').innerText = `IND need ${needed > 0 ? needed : 0} runs in ${6 - balls} balls`;
+      }
+    }, 6000);
+
+    // Sport Filter Buttons
+    function filterSport(sport, btn) {
+      document.querySelectorAll('.sport-btn').forEach(b => {
+        b.classList.remove('bg-emerald-600', 'text-white', 'font-semibold');
+        b.classList.add('bg-slate-800/80', 'text-slate-300', 'font-medium');
+      });
+      btn.classList.remove('bg-slate-800/80', 'text-slate-300', 'font-medium');
+      btn.classList.add('bg-emerald-600', 'text-white', 'font-semibold');
+
+      const featured = document.getElementById('featuredMatchSection');
+      const cards = document.querySelectorAll('.match-card');
+
+      if (sport === 'all') {
+        featured.style.display = 'block';
+        cards.forEach(c => c.style.display = 'block');
+      } else {
+        if (featured.dataset.sport === sport) {
+          featured.style.display = 'block';
+        } else {
+          featured.style.display = 'none';
+        }
+        cards.forEach(c => {
+          if (c.dataset.sport === sport) {
+            c.style.display = 'block';
+          } else {
+            c.style.display = 'none';
+          }
+        });
+      }
+    }
+
+    // Search Filter
+    function searchMatches() {
+      let query = document.getElementById('searchInput').value.toLowerCase();
+      const cards = document.querySelectorAll('.match-card');
+      cards.forEach(c => {
+        let teams = c.dataset.teams;
+        if (teams.includes(query)) {
+          c.style.display = 'block';
+        } else {
+          c.style.display = 'none';
+        }
+      });
+    }
+
+    // Scorecard Modal Functions
+    function openScorecard() {
+      document.getElementById('modalTitle').innerText = "India vs Australia - 3rd T20I Full Scorecard";
+      document.getElementById('modalBody').innerHTML = `
+        <div class="space-y-4">
+          <div>
+            <h4 class="font-bold text-emerald-400 mb-1">Australia Batting (1st Innings: 198/6)</h4>
+            <p>T. Head c & b Bumrah - 65 (35)</p>
+            <p>M. Marsh c Pant b Axar - 42 (28)</p>
+            <p>G. Maxwell b Arshdeep - 31 (15)</p>
+          </div>
+          <div class="border-t border-slate-800 pt-2">
+            <h4 class="font-bold text-emerald-400 mb-1">India Batting (2nd Innings)</h4>
+            <p>Y. Jaiswal c Smith b Starc - 18 (10)</p>
+            <p>Suryakumar Yadav* - 151 (80)</p>
+            <p>Hardik Pandya* - 22 (12)</p>
+          </div>
+        </div>
+      `;
+      document.getElementById('scorecardModal').classList.remove('hidden');
+    }
+
+    function openGenericModal(title, content) {
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('modalBody').innerHTML = `<p class="leading-relaxed">${content}</p>`;
+      document.getElementById('scorecardModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('scorecardModal').classList.add('hidden');
+    }
+  </script>
 </body>
 </html>
